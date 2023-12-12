@@ -1,7 +1,423 @@
 require 'rails_helper'
 
 RSpec.describe "Apartments", type: :request do
+
+  let(:user) {User.create(
+    email: "test@example.com",
+    password: "password",
+    password_confirmation: "password"
+  )
+}
+
   describe "GET /index" do
-    pending "add some examples (or delete) #{__FILE__}"
+    it 'gets a list of apartments' do 
+      apartment = user.apartments.create(
+        street: '4 Privet Drive',
+        unit: '2A',
+        city: 'Little Whinging',
+        state: 'Surrey',
+        square_footage: 2000,
+        price: '2000',
+        bedrooms: 3,
+        bathrooms: 2,
+        pets: 'yes',
+        image: 'https://c8.alamy.com/comp/B0RJGE/small-bungalow-home-with-pathway-in-addlestone-surrey-uk-B0RJGE.jpg'
+      )
+      get '/apartments'
+
+      apartment = JSON.parse(response.body)
+      expect(response).to have_http_status(200)
+      expect(apartment.first['street']).to eq('4 Privet Drive')
+      expect(apartment.first['unit']).to eq('2A')
+      expect(apartment.first['city']).to eq('Little Whinging')
+      expect(apartment.first['state']).to eq('Surrey')
+      expect(apartment.first['square_footage']).to eq(2000)
+      expect(apartment.first['price']).to eq('2000')
+      expect(apartment.first['bedrooms']).to eq(3)
+      expect(apartment.first['bathrooms']).to eq(2)
+      expect(apartment.first['pets']).to eq('yes')
+      expect(apartment.first['image']).to eq('https://c8.alamy.com/comp/B0RJGE/small-bungalow-home-with-pathway-in-addlestone-surrey-uk-B0RJGE.jpg')
+    end
+  end
+
+  describe "POST /create" do 
+    it "create an apartment" do
+      apartment_params = {
+        apartment: {
+          street: "Walaby Way",
+          unit: "42",
+          city: "Sydney",
+          state: "Australia",
+          square_footage: 1500,
+          price: "3000",
+          bedrooms: 3,
+          bathrooms: 2,
+          pets: "fish only",
+          image: "https://images.unsplash.com/photo-1540448051910-09cfadd5df61?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+          user_id: user.id
+        }
+      }
+
+      post '/apartments', params: apartment_params
+
+      apartment = Apartment.first
+      expect(response).to have_http_status(200)
+      expect(apartment.street).to eq "Walaby Way"
+      expect(apartment.unit).to eq "42"
+      expect(apartment.city).to eq "Sydney"
+      expect(apartment.state).to eq "Australia"
+      expect(apartment.square_footage).to eq 1500
+      expect(apartment.price).to eq "3000"
+      expect(apartment.bedrooms).to eq 3
+      expect(apartment.bathrooms).to eq 2
+      expect(apartment.pets).to eq "fish only"
+      expect(apartment.image).to eq "https://images.unsplash.com/photo-1540448051910-09cfadd5df61?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+      expect(apartment.user_id).to eq user.id
+    end
+  end
+
+  describe "PATCH /update" do 
+    it "update an apartment" do 
+      apartment_params = {
+        apartment: {
+          street: "Walaby Way",
+          unit: "42",
+          city: "Sydney",
+          state: "Australia",
+          square_footage: 1500,
+          price: "3000",
+          bedrooms: 3,
+          bathrooms: 2,
+          pets: "fish only",
+          image: "https://images.unsplash.com/photo-1540448051910-09cfadd5df61?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+          user_id: user.id
+        }
+      }
+
+      post '/apartments', params: apartment_params
+
+      apartment = Apartment.first
+
+      updated_apartment_params = {
+        apartment: {
+          street: "Walaby Way",
+          unit: "24",
+          city: "Sydney",
+          state: "Australia",
+          square_footage: 1500,
+          price: "3000",
+          bedrooms: 3,
+          bathrooms: 2,
+          pets: "fish only",
+          image: "https://images.unsplash.com/photo-1540448051910-09cfadd5df61?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+          user_id: user.id
+        }
+      }
+
+      patch "/apartments/#{apartment.id}", params: updated_apartment_params
+
+      expect(response).to have_http_status(200)
+
+      updated_apartment = Apartment.find(apartment.id)
+      expect(updated_apartment.unit).to eq "24"
+    end
+  end
+
+  describe "DELETE /destroy" do 
+    it "deletes an apartment" do 
+      apartment_params = {
+        apartment: {
+          street: "Walaby Way",
+          unit: "42",
+          city: "Sydney",
+          state: "Australia",
+          square_footage: 1500,
+          price: "3000",
+          bedrooms: 3,
+          bathrooms: 2,
+          pets: "fish only",
+          image: "https://images.unsplash.com/photo-1540448051910-09cfadd5df61?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+          user_id: user.id
+        }
+      }
+
+      post '/apartments', params: apartment_params
+
+      apartment = Apartment.first
+
+      delete "/apartments/#{apartment.id}"
+
+      expect(response).to have_http_status(200)
+      apartments = Apartment.all
+      expect(apartments).to be_empty
+    end
+  end
+  
+  # Street
+  describe "cannot create an apartment without valid attributes" do
+    it "doesn't create an apartment without a street name" do
+      apartment_params = {
+        apartment: {
+          unit: "42",
+          city: "Sydney",
+          state: "Australia",
+          square_footage: 1500,
+          price: "3000",
+          bedrooms: 3,
+          bathrooms: 2,
+          pets: "fish only",
+          image: "https://images.unsplash.com/photo-1540448051910-09cfadd5df61?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+          user_id: user.id
+        }
+      }
+
+      post '/apartments', params: apartment_params
+
+      expect(response).to have_http_status(422)
+
+      apartment = JSON.parse(response.body)
+      expect(apartment['street']).to include "can't be blank"
+    end
+
+    # Unit
+    it "cannot create an apartment without a unit number" do 
+      apartment_params = {
+        apartment: {
+          street: "Walaby Way",
+          city: "Sydney",
+          state: "Australia",
+          square_footage: 1500,
+          price: "3000",
+          bedrooms: 3,
+          bathrooms: 2,
+          pets: "fish only",
+          image: "https://images.unsplash.com/photo-1540448051910-09cfadd5df61?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+          user_id: user.id
+        }
+      }
+
+      post '/apartments', params: apartment_params
+
+      apartment = JSON.parse(response.body)
+      expect(response).to have_http_status(422)
+      expect(apartment['unit']).to include "can't be blank"
+    end
+
+    # City
+    it "cannot create an apartment without a city" do 
+      apartment_params = {
+        apartment: {
+          street: "Walaby Way",
+          unit: "42",
+          state: "Australia",
+          square_footage: 1500,
+          price: "3000",
+          bedrooms: 3,
+          bathrooms: 2,
+          pets: "fish only",
+          image: "https://images.unsplash.com/photo-1540448051910-09cfadd5df61?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+          user_id: user.id
+        }
+      }
+
+      post '/apartments', params: apartment_params
+
+      apartment = JSON.parse(response.body)
+      expect(response).to have_http_status(422)
+      expect(apartment['city']).to include "can't be blank"
+    end
+
+    # State
+    it "cannot create an apartment without a state" do 
+      apartment_params = {
+        apartment: {
+          street: "Walaby Way",
+          unit: "42",
+          city: "New Orleans",
+          square_footage: 1500,
+          price: "3000",
+          bedrooms: 3,
+          bathrooms: 2,
+          pets: "fish only",
+          image: "https://images.unsplash.com/photo-1540448051910-09cfadd5df61?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+          user_id: user.id
+        }
+      }
+
+      post '/apartments', params: apartment_params
+
+      apartment = JSON.parse(response.body)
+      expect(response).to have_http_status(422)
+      expect(apartment['state']).to include "can't be blank"
+    end
+
+    # Square Footage
+    it "cannot create an apartment without a square footage" do 
+      apartment_params = {
+        apartment: {
+          street: "Walaby Way",
+          unit: "42",
+          city: "New Orleans",
+          state: "Arizona",
+          price: "3000",
+          bedrooms: 3,
+          bathrooms: 2,
+          pets: "fish only",
+          image: "https://images.unsplash.com/photo-1540448051910-09cfadd5df61?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+          user_id: user.id
+        }
+      }
+
+      post '/apartments', params: apartment_params
+
+      apartment = JSON.parse(response.body)
+      expect(response).to have_http_status(422)
+      expect(apartment['square_footage']).to include "can't be blank"
+    end
+
+    # Price
+    it "cannot create an apartment without a price" do 
+      apartment_params = {
+        apartment: {
+          street: "Walaby Way",
+          unit: "42",
+          city: "New Orleans",
+          state: "Texas",
+          square_footage: 1500,
+          bedrooms: 3,
+          bathrooms: 2,
+          pets: "fish only",
+          image: "https://images.unsplash.com/photo-1540448051910-09cfadd5df61?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+          user_id: user.id
+        }
+      }
+
+      post '/apartments', params: apartment_params
+
+      apartment = JSON.parse(response.body)
+      expect(response).to have_http_status(422)
+      expect(apartment['price']).to include "can't be blank"
+    end
+
+    # Bedrooms
+    it "cannot create an apartment without a bedrooms" do 
+      apartment_params = {
+        apartment: {
+          street: "Walaby Way",
+          unit: "42",
+          city: "New Orleans",
+          state: "Texas",
+          square_footage: 1500,
+          price: "3000",
+          bathrooms: 2,
+          pets: "fish only",
+          image: "https://images.unsplash.com/photo-1540448051910-09cfadd5df61?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+          user_id: user.id
+        }
+      }
+
+      post '/apartments', params: apartment_params
+
+      apartment = JSON.parse(response.body)
+      expect(response).to have_http_status(422)
+      expect(apartment['bedrooms']).to include "can't be blank"
+    end
+
+    # Bathrooms
+    it "cannot create an apartment without a bathrooms" do 
+      apartment_params = {
+        apartment: {
+          street: "Walaby Way",
+          unit: "42",
+          city: "New Orleans",
+          state: "Texas",
+          square_footage: 1500,
+          price: "3000",
+          bedrooms: 3,
+          pets: "fish only",
+          image: "https://images.unsplash.com/photo-1540448051910-09cfadd5df61?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+          user_id: user.id
+        }
+      }
+
+      post '/apartments', params: apartment_params
+
+      apartment = JSON.parse(response.body)
+      expect(response).to have_http_status(422)
+      expect(apartment['bathrooms']).to include "can't be blank"
+    end
+
+    # Pets
+    it "cannot create an apartment without a pets" do 
+      apartment_params = {
+        apartment: {
+          street: "Walaby Way",
+          unit: "42",
+          city: "New Orleans",
+          state: "Texas",
+          square_footage: 1500,
+          price: "3000",
+          bedrooms: 3,
+          bathrooms: 2,
+          image: "https://images.unsplash.com/photo-1540448051910-09cfadd5df61?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+          user_id: user.id
+        }
+      }
+
+      post '/apartments', params: apartment_params
+
+      apartment = JSON.parse(response.body)
+      expect(response).to have_http_status(422)
+      expect(apartment['pets']).to include "can't be blank"
+    end
+
+    # Image
+    it "cannot create an apartment without a image" do 
+      apartment_params = {
+        apartment: {
+          street: "Walaby Way",
+          unit: "42",
+          city: "New Orleans",
+          state: "Texas",
+          square_footage: 1500,
+          price: "3000",
+          bedrooms: 3,
+          bathrooms: 2,
+          pets: "fish only",
+          user_id: user.id
+        }
+      }
+
+      post '/apartments', params: apartment_params
+
+      apartment = JSON.parse(response.body)
+      expect(response).to have_http_status(422)
+      expect(apartment['image']).to include "can't be blank"
+    end
+
+    # User ID
+    it "cannot create an apartment without a user id" do 
+      apartment_params = {
+        apartment: {
+          street: "Walaby Way",
+          unit: "42",
+          city: "New Orleans",
+          state: "Texas",
+          square_footage: 1500,
+          price: "3000",
+          bedrooms: 3,
+          bathrooms: 2,
+          pets: "fish only",
+          image: "https://images.unsplash.com/photo-1540448051910-09cfadd5df61?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+          
+        }
+      }
+
+      post '/apartments', params: apartment_params
+
+      apartment = JSON.parse(response.body)
+      expect(response).to have_http_status(422)
+      expect(apartment['user_id']).to include "can't be blank"
+    end
   end
 end
