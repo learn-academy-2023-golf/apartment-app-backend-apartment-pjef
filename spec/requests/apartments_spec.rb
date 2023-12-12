@@ -38,4 +38,39 @@ RSpec.describe "Apartments", type: :request do
           expect(apartment.first['image']).to eq('https://c8.alamy.com/comp/B0RJGE/small-bungalow-home-with-pathway-in-addlestone-surrey-uk-B0RJGE.jpg')
         end
     end
+    describe "POST /create" do
+        it "create an apartment" do
+          apartment_params = {
+            apartment: {
+              street: "Walaby Way",
+              unit: "42",
+              city: "Sydney",
+              state: "Australia",
+              square_footage: 1500,
+              price: "3000",
+              bedrooms: 3,
+              bathrooms: 2,
+              pets: "fish only",
+              image: "https://images.unsplash.com/photo-1540448051910-09cfadd5df61?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+              user_id: user.id
+            }
+          }
+    
+          post '/apartments', params: apartment_params
+    
+          apartment = Apartment.first
+          expect(response).to have_http_status(200)
+          expect(apartment.street).to eq "Walaby Way"
+          expect(apartment.unit).to eq "42"
+          expect(apartment.city).to eq "Sydney"
+          expect(apartment.state).to eq "Australia"
+          expect(apartment.square_footage).to eq 1500
+          expect(apartment.price).to eq "3000"
+          expect(apartment.bedrooms).to eq 3
+          expect(apartment.bathrooms).to eq 2
+          expect(apartment.pets).to eq "fish only"
+          expect(apartment.image).to eq "https://images.unsplash.com/photo-1540448051910-09cfadd5df61?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+          expect(apartment.user_id).to eq user.id
+        end
+    end
 end
