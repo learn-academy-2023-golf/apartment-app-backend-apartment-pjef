@@ -72,5 +72,26 @@ RSpec.describe "Apartments", type: :request do
           expect(apartment.image).to eq "https://images.unsplash.com/photo-1540448051910-09cfadd5df61?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
           expect(apartment.user_id).to eq user.id
         end
+
+        it "cant create an apartment" do
+            apartment_params = {
+            apartment: {
+            street: "Walaby Way",
+            city: "Sydney",
+            state: "Australia",
+            square_footage: 1500,
+            price: "3000",
+            bedrooms: 3,
+            bathrooms: 2,
+            pets: "fish only",
+            image: "https://images.unsplash.com/photo-1540448051910-09cfadd5df61?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+            user_id: user.id
+            }
+            }
+            post '/apartments', params: apartment_params
+            apartment = JSON.parse(response.body)
+            expect(response).to have_http_status(422)
+            expect(apartment['unit']).to include "can't be blank"
+        end
     end
 end
