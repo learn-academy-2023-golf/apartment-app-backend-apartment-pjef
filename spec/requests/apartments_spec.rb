@@ -357,7 +357,7 @@ end
             expect(apartment['street']).to include "can't be blank"
         end
     end
-    describe "cannot update an apartmenr without valid attributes" do
+    describe "cannot update an apartment without valid attributes" do
         it "doesn't update an apartment without parameters" do
         apartment_params = {
             apartment: {
@@ -380,4 +380,34 @@ end
             apartment = JSON.parse(response.body)
         end
     end
+
+    describe "DELETE /destroy" do
+        it "deletes an apartment" do
+            apartment = user.apartments.create(
+              street: "Walaby Way",
+              unit: "42",
+              city: "Sydney",
+              state: "Australia",
+              square_footage: 1500,
+              price: "3000",
+              bedrooms: 3,
+              bathrooms: 2,
+              pets: "fish only",
+              image: "https://images.unsplash.com/photo-1540448051910-09cfadd5df61?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+              user_id: user.id
+              
+          )
+    
+          delete "/apartments/#{apartment.id}"
+    
+          expect(response).to have_http_status(200)
+          apartments = Apartment.all
+          expect(apartments).to be_empty
+        end
+    end
 end
+    
+      
+        
+
+
